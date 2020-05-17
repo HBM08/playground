@@ -1,0 +1,17 @@
+version: '3'
+services:
+    node-application:
+        build: 
+            dockerfile: Dockerfile
+            context: ./node-app 
+        volumes:
+            - /app/node_modules 
+            - ./node-app:/app
+    nginx:
+        restart: always
+        build: 
+          dockerfile: Dockerfile
+          context: ./react-app
+        ports: 
+          - 80:80
+          - 443:443
