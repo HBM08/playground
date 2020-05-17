@@ -1,6 +1,7 @@
 version: '3'
 services:
     node-application:
+        container_name: "node-app"
         build: 
             dockerfile: Dockerfile
             context: ./node-app 
@@ -8,6 +9,7 @@ services:
             - /app/node_modules 
             - ./node-app:/app
     nginx:
+        container_name: "nginx"
         restart: always
         build: 
           dockerfile: Dockerfile
@@ -16,10 +18,11 @@ services:
           - 80:80
           - 443:443
     database:
-      image: "postgres"
-      env_file:
-        - ./node-app/database.env
-      volumes:
-        - database-data:/var/lib/postgresql/data/
+        image: "postgres"
+        container_name: "psql"
+        env_file:
+          - ./node-app/.env
+        volumes:
+          - database-data:/var/lib/postgresql/data/
 volumes:
   database-data:
