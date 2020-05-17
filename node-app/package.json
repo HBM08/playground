@@ -1,0 +1,9 @@
+{
+  "name": "node-app",
+  "version": "1.0.0",
+  "description": "Server application",
+  "main": "index.js",
+  "repository": "git@github.com:HBM08/playground.git",
+  "author": "bho",
+  "license": "MIT"
+}
