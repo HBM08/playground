@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const HttpError = require('./models/http-error');
 const usersRouter = require('./routes/users-routes');
+const healthRouter = require('./routes/health-route');
 const { sequelize } = require('./db');
 
 const app = express();
@@ -22,6 +23,7 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.use(healthRouter);
 app.use('/api/users/', usersRouter);
 
 app.use((req, res, next) => {
