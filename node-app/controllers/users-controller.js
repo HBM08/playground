@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const { Sequelize } = require('../db');
+const { Op } = Sequelize;
 const HttpError = require('../models/http-error');
-const User = require('../models/users');
+const User = require('../models/user');
 
 const getUsers = async (req, res, next) => {
   let users;
@@ -14,8 +15,8 @@ const getUsers = async (req, res, next) => {
       500
     );
   }
-
-  res.json({ users: users.map((user) => user.userData.toObject({ getters: true })) });
+  console.log(users)
+  res.json(users);
 };
 
 const getUserById = async (req, res, next) => {
@@ -36,7 +37,28 @@ const getUserById = async (req, res, next) => {
     return next(new HttpError('Could not find user with the provided id', 404));
   }
 
-  res.json({ user: user.toObject({ getters: true }) });
+  res.json(user);
+};
+
+const deleteUserById = async (req, res, next) => {
+  const { userId } = req.params;
+
+  let user;
+  try {
+    user = await User.destroy({
+      where: {
+        id: userId
+      }
+    });
+  } catch (err) {
+    return next(new HttpError('Something went wrong while dropping user. ' + err, 500));
+  }
+
+  if (!user) {
+    return next(new HttpError('Could not delete user with the provided id', 404));
+  }
+
+  res.json(`User with id ${userId} was successfuly deleted.`);
 };
 
 const signup = async (req, res, next) => {
@@ -47,6 +69,30 @@ const signup = async (req, res, next) => {
     password
   } = req.body;
 
+  // check for already existing email address
+  let existingUsers;
+  try {
+    existingUsers = await User.findAll({
+      where: {
+        "data.email": {
+          [Op.eq]: email
+        }
+      }
+    });
+  } catch (err) {
+    const error = new HttpError('Signup failed with error:\n' + err , 500);
+    return next(error);
+  }
+
+  if (existingUsers.length === 1) {
+    const error = new HttpError(
+      'Email addres is already used, please signup with another email address.',
+      401
+    );
+    return next(error);
+  }
+
+  // encrypt password before saving it into db
   let hashedPassword;
   try {
     hashedPassword = await bcrypt.hash(password, 12);
@@ -63,10 +109,11 @@ const signup = async (req, res, next) => {
   }
 
   let createdUser;
+
   try {
     createdUser = await User.create({data: userToCreate});
   } catch (err) {
-    const error = new HttpError('Signing up user to DB failed.', 500);
+    const error = new HttpError('Signing up user to DB failed with error' + err, 500);
     return next(error);
   }
 
@@ -97,21 +144,21 @@ const signup = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  let existingUser;
+  let existingUsers;
   try {
-    existingUser = await User.findAll({
+    existingUsers = await User.findAll({
       where: {
         "data.email": {
-          [Op.is]: email
+          [Op.eq]: email
         }
       }
     });
   } catch (err) {
-    const error = new HttpError('Login failed, please try again', 500);
+    const error = new HttpError('Login failed with error:\n' + err , 500);
     return next(error);
   }
 
-  if (!existingUser) {
+  if (existingUsers.length !== 1) {
     const error = new HttpError(
       'Invalid email addres, could not log you in',
       401
@@ -119,12 +166,13 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
+  const existingUser = existingUsers[0].dataValues;
   let isValidPassword = false;
   try {
     isValidPassword = await bcrypt.compare(password, existingUser.data.password);
   } catch (err) {
     const error = new HttpError(
-      'Could not log you in, please check your credentials.',
+      'Could not log you in, please check your credentials. ' + err,
       500
     );
     return next(error);
@@ -162,7 +210,4 @@ const login = async (req, res, next) => {
   });
 };
 
-exports.getUsers = getUsers;
-exports.signup = signup;
-exports.login = login;
-exports.getUserById = getUserById;
+module.exports = { getUsers, getUserById, deleteUserById, signup, login }

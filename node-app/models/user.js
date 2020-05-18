@@ -1,5 +1,4 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../app');
+const { sequelize, Sequelize } = require('../db');
 const userSchema = require('../util/validators')
 const { Model, DataTypes } = Sequelize;
 
@@ -26,6 +25,9 @@ User.init({
     }
   }
 }, {
-  sequelize
+  sequelize,
+  modelName: 'user'
+  // options
 });
-sequelize.models.modelName
+
+module.exports = User
