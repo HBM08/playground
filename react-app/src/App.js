@@ -1,20 +1,37 @@
 import React from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { Route } from 'react-router-dom'
 import Nav from './navigation/Nav'
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import { AuthContext } from './context/auth-context';
+import { useAuth } from './hooks/auth-hook';
+import PrivateRoute from './navigation/PrivateRoute';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
+function App(props) {
 
-function App() {
+  const { history } = props;
+  const { token, userId, role, goToLoginPage, login, logout } = useAuth(history);
+  const auth = {
+    isLoggedIn: !!token,
+    token,
+    userId,
+    role,
+    goToLoginPage,
+    login,
+    logout
+  }
   return (
-    <Router>
-      <Nav />
-      <div className="body">
-        <Route path="/" exact component={Home}/>
-        <Route path="/dashboard" exact component={Dashboard}/>
-      </div>
-    </Router>
-  );
+    <AuthContext.Provider value={auth}>
+        <Nav auth={auth} history={history}/>
+        <div className="body">
+          <Route path="/" exact component={Home}/>
+          <Route path="/login" exact component={Login}/>
+          <Route path="/register" exact component={Register}/>
+          <PrivateRoute path="/dashboard" component={Dashboard} a/>
+        </div>
+    </AuthContext.Provider> );
 }
 
 export default App;

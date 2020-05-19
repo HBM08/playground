@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { AuthContext } from '../context/auth-context';
 
 function Home() {
+  const { isLoggedIn } = useContext(AuthContext);
   return (
-    <h1>Home</h1>
+    <div>
+      The user is <b>{isLoggedIn ? 'currently' : 'not'}</b> logged in.
+    </div>
   );
 }
 

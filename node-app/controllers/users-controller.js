@@ -92,7 +92,7 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
-  // encrypt password before saving it into db
+  // encrypt password before saving it into
   let hashedPassword;
   try {
     hashedPassword = await bcrypt.hash(password, 12);
