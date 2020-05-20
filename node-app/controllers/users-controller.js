@@ -313,11 +313,7 @@ const getUsersInternal = async (req, res, next) => {
     );
   }
   
-  res.json(users.map(user => {
-    "userId": user.id,
-    email: user.data.email,
-    phone: user.data.phone
-  }));
+  res.json(users);
 };
 
 module.exports = { getUsers, getUserById, deleteUserById, signup, login, createUser, getUsersInternal }
