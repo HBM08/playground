@@ -1,29 +1,33 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { connect } from "react-redux";
 import useForm from '../hooks/useForm';
 import { AuthContext } from '../context/auth-context';
 import { useHttpClient } from '../hooks/http-hook';
+import { saveUser, loadUsers } from "../redux/actions/userActions";
+import { toast } from "react-toastify";
 
-const Register = (props) => {
-  const { values, handleChange, handleSubmit } = useForm(register);
+
+const ManageUser = ({ users, loading, history, loadUsers, saveUser }) => {
+  const { values, handleChange, handleSubmit } = useForm(createUser);
   const { error, sendRequest, clearError } = useHttpClient();  
   const auth = useContext(AuthContext)  
 
-  async function register() {
-    try {
-      const responseData = await sendRequest(
-        'http://localhost:5000/api/users/signup',
-        'POST',
-        JSON.stringify({
-          userName: values.userName,
-          phone: values.phone,
-          email: values.email,
-          password: values.password
-        })
-      );
-      auth.login(responseData.userId, responseData.token);
-    } catch (err) {
-      console.error(err);
+  useEffect(() => {
+    if (users.length === 0) {
+      loadUsers(sendRequest, auth.token).catch(error => {
+        alert("Loading courses failed" + error);
+      });
     }
+  }, []);
+
+  async function createUser() {
+    saveUser(values, sendRequest, auth.token).then(() => {
+      toast.success("User created.");
+      history.push("/dashboard");
+    })
+    .catch(error => {
+      alert('Message could not be created because of error ', error);
+    });
   }
 
   return (
@@ -57,7 +61,7 @@ const Register = (props) => {
                   {error && <div className="error">{error}</div>}
                 </div>
               </div>
-              <button type="submit" className="button is-block is-info is-fullwidth">Register</button>
+              <button type="submit" className="button is-block is-info is-fullwidth">{loading ? 'Creating...' : 'Create user'}</button>
             </form>
           </div>
         </div>
@@ -66,4 +70,20 @@ const Register = (props) => {
   );
 };
 
-export default Register;
+function mapStateToProps(state) {
+  console.log(state)
+  return {
+    users: state.default.users,
+    loading: state.default.apiCallsInProgress > 0
+  };
+}
+
+const mapDispatchToProps = {
+  saveUser,
+  loadUsers
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ManageUser);

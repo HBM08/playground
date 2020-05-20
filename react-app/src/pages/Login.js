@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 
 const Login = (props) => {
   const { values, handleChange, handleSubmit } = useForm(login);
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();  
+  const { error, sendRequest, clearError } = useHttpClient();  
   const auth = useContext(AuthContext)  
 
   async function login() {

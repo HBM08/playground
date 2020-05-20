@@ -51,10 +51,10 @@ function Dashboard ({ users, loading, actions }) {
           </button>
 
 
-          <UserList
+          {/* <UserList
             onDeleteClick={handleDeleteCourse}
             courses={users}
-          />
+          /> */}
         </>
       )}
     </>

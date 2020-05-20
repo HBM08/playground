@@ -267,6 +267,7 @@ const createUser = async (req, res, next) => {
     userId: createdUser.id,
     email: createdUser.data.email,
     userName: createdUser.data.userName,
+    phone: createdUser.data.phone,
     token
   });
 };
@@ -311,8 +312,12 @@ const getUsersInternal = async (req, res, next) => {
       500
     );
   }
-  console.log(users)
-  res.json(users);
+  
+  res.json(users.map(user => {
+    "userId": user.id,
+    email: user.data.email,
+    phone: user.data.phone
+  }));
 };
 
 module.exports = { getUsers, getUserById, deleteUserById, signup, login, createUser, getUsersInternal }
