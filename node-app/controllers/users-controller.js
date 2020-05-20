@@ -40,27 +40,6 @@ const getUserById = async (req, res, next) => {
   res.json(user);
 };
 
-const deleteUserById = async (req, res, next) => {
-  const { userId } = req.params;
-
-  let user;
-  try {
-    user = await User.destroy({
-      where: {
-        id: userId
-      }
-    });
-  } catch (err) {
-    return next(new HttpError('Something went wrong while dropping user. ' + err, 500));
-  }
-
-  if (!user) {
-    return next(new HttpError('Could not delete user with the provided id', 404));
-  }
-
-  res.json(`User with id ${userId} was successfuly deleted.`);
-};
-
 const signup = async (req, res, next) => {
   const {
     userName,
@@ -210,4 +189,132 @@ const login = async (req, res, next) => {
   });
 };
 
-module.exports = { getUsers, getUserById, deleteUserById, signup, login }
+// ------- available only for internal users -----
+const createUser = async (req, res, next) => {
+  const {
+    userName,
+    email,
+    phone,
+    password
+  } = req.body;
+
+  // check for already existing email address
+  let existingUsers;
+  try {
+    existingUsers = await User.findAll({
+      where: {
+        "data.email": {
+          [Op.eq]: email
+        },
+        "data.role": {
+          [Op.eq]: "external"
+        }
+      }
+    });
+  } catch (err) {
+    const error = new HttpError('Signup failed with error:\n' + err , 500);
+    return next(error);
+  }
+
+  if (existingUsers.length === 1) {
+    const error = new HttpError(
+      'Email addres is already used, please create with another email address.',
+      401
+    );
+    return next(error);
+  }
+
+  // encrypt password before saving it into
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    return next(new HttpError('Could not create user, please try again', 500));
+  }
+
+  const userToCreate = {
+    userName,
+    email,
+    phone,
+    password: hashedPassword,
+    role: "external"
+  }
+
+  let createdUser;
+
+  try {
+    createdUser = await User.create({data: userToCreate});
+  } catch (err) {
+    const error = new HttpError('Signing up user to DB failed with error' + err, 500);
+    return next(error);
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      {
+        userId: createdUser.id,
+        email: createdUser.data.email,
+        role: createdUser.data.role
+      },
+      process.env.TOKEN_ENCRYPTION,
+      { expiresIn: '8h' }
+    );
+  } catch (err) {
+    const error = new HttpError('Signing up user failed.', 500);
+    return next(error);
+  }
+
+  res.status(201).json({
+    userId: createdUser.id,
+    email: createdUser.data.email,
+    userName: createdUser.data.userName,
+    token
+  });
+};
+
+const deleteUserById = async (req, res, next) => {
+  const { userId } = req.params;
+
+  let user;
+  try {
+    user = await User.destroy({
+      where: {
+        id: userId,
+        "data.role": {
+          [Op.eq]: "external"
+        }
+      }
+    });
+  } catch (err) {
+    return next(new HttpError('Something went wrong while dropping user. ' + err, 500));
+  }
+
+  if (!user) {
+    return next(new HttpError('Could not delete user with the provided id', 404));
+  }
+
+  res.json(`User with id ${userId} was successfuly deleted.`);
+};
+
+const getUsersInternal = async (req, res, next) => {
+  let users;
+  try {
+    users = await User.findAll({
+      where: {
+        "data.role": {
+          [Op.eq]: "external"
+        }
+      }
+    });
+  } catch (err) {
+    return next(
+      new HttpError('Fetching users failed, please try again later.'),
+      500
+    );
+  }
+  console.log(users)
+  res.json(users);
+};
+
+module.exports = { getUsers, getUserById, deleteUserById, signup, login, createUser, getUsersInternal }
