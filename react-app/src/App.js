@@ -29,7 +29,7 @@ function App(props) {
           <Route path="/" exact component={Home}/>
           <Route path="/login" exact component={Login}/>
           <Route path="/register" exact component={Register}/>
-          <PrivateRoute path="/dashboard" component={Dashboard} a/>
+          <PrivateRoute path="/dashboard" component={Dashboard}/>
         </div>
     </AuthContext.Provider> );
 }

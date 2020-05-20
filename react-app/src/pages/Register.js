@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import useForm from '../hooks/useForm';
 import { AuthContext } from '../context/auth-context';
 import { useHttpClient } from '../hooks/http-hook';
-import { Link } from 'react-router-dom'
 
 const Register = (props) => {
   const { values, handleChange, handleSubmit } = useForm(register);

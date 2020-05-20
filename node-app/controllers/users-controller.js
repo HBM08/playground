@@ -190,6 +190,7 @@ const login = async (req, res, next) => {
 };
 
 // ------- available only for internal users -----
+
 const createUser = async (req, res, next) => {
   const {
     userName,
@@ -205,9 +206,6 @@ const createUser = async (req, res, next) => {
       where: {
         "data.email": {
           [Op.eq]: email
-        },
-        "data.role": {
-          [Op.eq]: "external"
         }
       }
     });
