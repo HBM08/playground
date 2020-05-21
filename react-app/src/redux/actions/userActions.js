@@ -51,11 +51,11 @@ export function saveUser(user, sendRequest, token) {
   };
 }
 
-export function deleteUser(userId, sendRequest, token) {
+export function deleteUser(user, sendRequest, token) {
   return function(dispatch) {
     // Doing optimistic delete, so not dispatching begin/end api call
     // actions, or apiCallError action since we're not showing the loading status for this.
-    dispatch(deleteUserOptimistic(userId, sendRequest, token));
-    return userApi.deleteUser(userId, token);
+    dispatch(deleteUserOptimistic(user, sendRequest, token));
+    return userApi.deleteUser(user.id, token);
   };
 }

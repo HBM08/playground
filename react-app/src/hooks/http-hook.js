@@ -11,7 +11,6 @@ import { useState, useCallback } from 'react';
 export const useHttpClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [errorCode, setErrorCode] = useState();
 
   const sendRequest = useCallback(
     async (
@@ -50,5 +49,5 @@ export const useHttpClient = () => {
     setError(null);
   };
 
-  return { isLoading, error, errorCode, sendRequest, clearError };
+  return { isLoading, error, sendRequest, clearError };
 };

@@ -263,13 +263,7 @@ const createUser = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({
-    userId: createdUser.id,
-    email: createdUser.data.email,
-    userName: createdUser.data.userName,
-    phone: createdUser.data.phone,
-    token
-  });
+  res.status(201).json(createdUser);
 };
 
 const deleteUserById = async (req, res, next) => {

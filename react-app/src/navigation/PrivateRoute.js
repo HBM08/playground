@@ -2,8 +2,11 @@ import React from "react";
 import { Route } from "react-router-dom";
 import PropTypes from "prop-types";
 import { AuthContext } from '../context/auth-context';
+import { useHttpClient } from "../hooks/http-hook";
 
 function PrivateRoute({ component: Component, ...rest }) {
+  const httpClient = useHttpClient();  
+
   return (
     <AuthContext.Consumer>
       {auth => (
@@ -15,7 +18,7 @@ function PrivateRoute({ component: Component, ...rest }) {
             if (!auth.isLoggedIn) return props.history.push('/login');
 
             // 3. Render component
-            return <Component auth={auth} {...props} />;
+            return <Component auth={auth} httpClient={httpClient} {...props} />;
           }}
         />
       )}
@@ -24,7 +27,7 @@ function PrivateRoute({ component: Component, ...rest }) {
 }
 
 PrivateRoute.propTypes = {
-  component: PropTypes.func.isRequired,
+  component: PropTypes.object.isRequired,
 };
 
 export default PrivateRoute;

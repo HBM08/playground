@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import * as userActions from "../redux/actions/userActions";
 import PropTypes from "prop-types";
@@ -6,15 +6,12 @@ import { bindActionCreators } from "redux";
 import { Redirect } from "react-router-dom";
 import Spinner from "../common/Spinner";
 import { toast } from "react-toastify";
-import { AuthContext } from "../context/auth-context";
 import UserList from "./UserList";
-import { useHttpClient } from "../hooks/http-hook";
 
-function Dashboard ({ users, loading, actions }) {
-  const { token } = useContext(AuthContext);
-  const { sendRequest } = useHttpClient();
+function Dashboard ({ users, auth, httpClient, loading, actions }) {
+  const { token } = auth;
+  const { sendRequest } = httpClient;
   const [redirectToAddCoursePage, setRedirectToAddCoursePage] = useState(false);
-
 
   useEffect(() => {
     if (users.length === 0) {
@@ -22,12 +19,14 @@ function Dashboard ({ users, loading, actions }) {
         alert("Loading courses failed" + error);
       });
     }
+
   }, []);
 
-  const handleDeleteCourse = async course => {
+  const handleDeleteUser = async user => {
+    // TODO: fix toast
     toast.success("Course deleted");
     try {
-      await actions.deleteCourse(course, sendRequest, token);
+      await actions.deleteUser(user, sendRequest, token);
     } catch (error) {
       toast.error("Delete failed. " + error.message, { autoClose: false });
     }
@@ -37,7 +36,7 @@ function Dashboard ({ users, loading, actions }) {
     
     <>
       {redirectToAddCoursePage && <Redirect to="/user" />}
-      <h2>Courses</h2>
+      <h2>Users</h2>
       {loading ? (
         <Spinner />
       ) : (
@@ -47,14 +46,14 @@ function Dashboard ({ users, loading, actions }) {
             className="btn btn-primary add-course"
             onClick={() => setRedirectToAddCoursePage(true)}
           >
-            Add Course
+            Create User
           </button>
 
 
-          {/* <UserList
-            onDeleteClick={handleDeleteCourse}
-            courses={users}
-          /> */}
+          <UserList
+            onDeleteClick={handleDeleteUser}
+            users={users}
+          />
         </>
       )}
     </>
@@ -68,7 +67,6 @@ Dashboard.propTypes = {
 };
 
 function mapStateToProps(state) {
-  console.log(state)
   return {
     users: state.default.users,
     loading: state.default.apiCallsInProgress > 0

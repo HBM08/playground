@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
-const UserList = ({ users, onDeleteClick }) => (
-  <table className="table">
+const UserList = ({ users, onDeleteClick }) => {
+
+  useEffect(() => {
+    // rerender when users change
+    console.log("In list", users)
+  }, [users]);
+
+  return <table className="table">
     <thead>
       <tr>
-        <th />
         <th>User Name</th>
         <th>Email</th>
         <th>Phone Number</th>
@@ -14,7 +19,7 @@ const UserList = ({ users, onDeleteClick }) => (
       </tr>
     </thead>
     <tbody>
-      {users.map(user => {
+      {users && users.map(user => {
         return (
           <tr key={user.id}>
             <td>
@@ -35,10 +40,10 @@ const UserList = ({ users, onDeleteClick }) => (
       })}
     </tbody>
   </table>
-);
+};
 
 UserList.propTypes = {
-  users: PropTypes.array.isRequired,
+  users: PropTypes.array,
   onDeleteClick: PropTypes.func.isRequired
 };
 
